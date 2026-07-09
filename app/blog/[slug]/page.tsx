@@ -65,7 +65,7 @@ export default async function BlogPost({
         </nav>
       </aside>
 
-      <article id="top" className="mx-auto max-w-3xl px-6 pb-32 pt-32">
+      <article id="top" className="mx-auto max-w-3xl px-5 pb-32 pt-28 md:px-6 md:pt-32">
         <Link
           href="/blog"
           className="hud-label text-muted-foreground transition-colors hover:text-primary"
@@ -75,7 +75,7 @@ export default async function BlogPost({
 
         <header className="mb-12 mt-8">
           <p className="hud-label mb-3 text-primary">{formatDate(post.date)}</p>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
             {post.title}
           </h1>
           {post.tags.length > 0 && (

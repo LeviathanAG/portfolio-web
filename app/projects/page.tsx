@@ -18,9 +18,9 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <div className="mx-auto max-w-4xl px-6 pb-32 pt-32">
+    <div className="mx-auto max-w-4xl px-5 pb-32 pt-28 md:px-6 md:pt-32">
       <p className="hud-label mb-2 text-primary">SELECTED WORK</p>
-      <h1 className="mb-12 text-4xl font-bold tracking-tight">Projects</h1>
+      <h1 className="mb-10 text-3xl font-bold tracking-tight md:mb-12 md:text-4xl">Projects</h1>
 
       <div className="grid gap-5 sm:grid-cols-2">
         {projects.map((project) => (

@@ -130,6 +130,13 @@ export function CatBackground() {
     const group = new THREE.Group();
     scene.add(group);
 
+    // smaller cat on narrow screens so it doesn't crowd the HUD
+    const targetSize = () => (window.innerWidth < 768 ? 1.6 : 2.6);
+    let modelMaxDim = 0;
+    const applyScale = () => {
+      if (modelMaxDim > 0) group.scale.setScalar(targetSize() / modelMaxDim);
+    };
+
     let disposed = false;
     new GLTFLoader().load("/glb/cat.glb", (gltf) => {
       if (disposed) return;
@@ -143,8 +150,8 @@ export function CatBackground() {
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       model.position.sub(center);
-      const scale = 2.6 / Math.max(size.x, size.y, size.z);
-      group.scale.setScalar(scale);
+      modelMaxDim = Math.max(size.x, size.y, size.z);
+      applyScale();
       group.add(model);
     });
 
@@ -164,6 +171,7 @@ export function CatBackground() {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      applyScale();
     };
     window.addEventListener("resize", onResize);
 

@@ -8,7 +8,7 @@ const links = [
 
 export default function Home() {
   return (
-    <div className="relative flex h-screen items-end justify-center pb-10">
+    <div className="relative flex h-dvh items-end justify-center pb-16 md:pb-10">
       <h1 className="sr-only">Satwik — portfolio and blog</h1>
       <nav aria-label="Primary" className="hud-label flex items-center gap-3">
         {links.map((link, index) => (

@@ -42,18 +42,18 @@ export function Hud() {
   return (
     <>
       {showClock && (
-        <div className="hud-label pointer-events-none fixed left-6 top-1/2 z-40 -translate-y-1/2 text-foreground/60 max-md:top-1/4 md:left-10">
+        <div className="hud-label pointer-events-none fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 text-foreground/60 md:left-10 md:block">
           <Clock />
         </div>
       )}
-      <div className="hud-label pointer-events-none fixed right-6 top-1/2 z-40 -translate-y-1/2 text-right text-foreground/60 max-md:top-3/4 md:right-10">
+      <div className="hud-label pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 text-right text-foreground/60 md:right-10 md:block">
         {site.hudQuote.map((line) => (
           <span key={line} className="block">
             {line}
           </span>
         ))}
       </div>
-      <div className="fixed bottom-5 right-6 z-40 md:right-10">
+      <div className="fixed bottom-5 right-4 z-40 md:right-10">
         <SocialIcons />
       </div>
     </>

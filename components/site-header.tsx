@@ -17,8 +17,8 @@ export function SiteHeader() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <nav className="flex items-center justify-between px-6 py-5 md:px-10">
-        <div className="flex items-center gap-8">
+      <nav className="flex items-center justify-between gap-3 px-4 py-4 md:px-10 md:py-5">
+        <div className="flex items-center gap-4 md:gap-8">
           <Link
             href="/"
             aria-label="Home"

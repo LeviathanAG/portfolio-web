@@ -12,9 +12,9 @@ export default function BlogIndex() {
   const posts = getAllPosts();
 
   return (
-    <div className="mx-auto max-w-3xl px-6 pb-32 pt-32">
+    <div className="mx-auto max-w-3xl px-5 pb-32 pt-28 md:px-6 md:pt-32">
       <p className="hud-label mb-2 text-primary">WRITEUPS / NOTES</p>
-      <h1 className="mb-12 text-4xl font-bold tracking-tight">Blog</h1>
+      <h1 className="mb-10 text-3xl font-bold tracking-tight md:mb-12 md:text-4xl">Blog</h1>
 
       {posts.length === 0 && (
         <p className="text-muted-foreground">

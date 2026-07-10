@@ -99,7 +99,7 @@ also it calls _exit() which if you know does not do the io flushing or the clean
 
 
 
-# Exploitation
+## Exploitation
 
 - So now that we know the libc base and our primitives, what can we even do?
 
@@ -1181,7 +1181,7 @@ so we are restricted to openat2, read, write which had worked locally using secc
 
 - Anyways after getting arb function calling, a lot of things can be done to get code execution.
 
-# Final Exec Path
+## Final Exec Path
  
 - what I did was used : 
 
@@ -1223,7 +1223,7 @@ there we go, we can cat the flag :
 `
 
 
-# Final Solve Script :
+## Final Solve Script :
 
 ```py
 #!/usr/bin/env python3

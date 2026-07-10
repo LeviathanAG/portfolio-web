@@ -44,7 +44,9 @@ function rehypeCollectHeadings(headings: MarkdownHeading[]) {
       const id = node.properties?.id;
       if (typeof id !== "string") return;
 
-      const text = textContent(node).trim();
+      const text = textContent(node)
+        .trim()
+        .replace(/[\s:]+$/, "");
       if (!text) return;
 
       headings.push({

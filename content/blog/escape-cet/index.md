@@ -8,6 +8,8 @@ tags: [CET, IBT, r3ctf]
 # Escape CET 
 
 The only challenge I solved in this CTF and it will fully human lead.
+
+This writeup is also fully human written.
 ## initial recon -
 
 

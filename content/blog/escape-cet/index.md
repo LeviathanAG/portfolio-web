@@ -1215,7 +1215,17 @@ what I did was, I used `lll_lock_priv`'s register setup to setup rsi. RDI was al
 
 > since randr(lm) uses lm as seed, we can use `lm = 0x234`
 
-so `seed = 0x234` sets up rdx to `0x7`
+![alt text](image-24.png)
+
+so `seed = 0x234` sets up rdx to `0x7`, if u look at disass, we can basically back calculate what deref to lm musst contain to setup rdx to the value we want.
+
+**at the end, the rdx sets up and returns to the 3rd function we call**
+
+![alt text](image-25.png)
+
+
+
+
 
 i had used this before in a prev chall so it was easy to recall.
 

@@ -17,7 +17,7 @@ So like the challenge title says, we had to assume that CET was enabled and chec
 
 Anyways, I was trying out the chall `poly` while my teammate was doing this chall but alas i could not gett past the clobbering after some top chunk shenanigans in that chall and started working on this challenge.
 
-![alt text](image-1.png)
+
 
 so yea, i had some initial knowledge from my teammate before i started working on the chall but ill explain from the start.
 

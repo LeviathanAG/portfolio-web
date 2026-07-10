@@ -1436,3 +1436,14 @@ if __name__ == "__main__":
 
 ```
 
+**Final Author note and thoughts** : 
+
+This challenge was incredibly simple yet complex at the same time. I prefer challenges that have minimal source analysis (I hate rev lol) and this challenge kept me up all night since i kept getting progress but also hit roadblocks and stuff.
+
+DUe to advent of AI, pwn challs are getting harder and harder and for human solvers to even understand the source code let alone exploit random multi threading vulns.
+
+I believe the human solvers will get better at pwn but it has become excruciatngly hard for humans to solve these challs in a reasonable amt of time lwk.
+
+Idk how to fix this issue so I have completely pivoted to doing at max 1 or 2 good challs every ctf where i can learn somth meaning full without it getting too complex like finding 0 days and stuff which is unreasonable. this is why is really like escape-cet and poly which at the end of the day extremely simple primitives but require a lot of human ingenuity rather than sheer compute/manpower to go thru hundreds of LOC.
+
+I'd also love feedback on improving my writeup and making my solve scripts more understandable. i use flat for most of my pls currently. do lemme know if there are more understanable alternatvies.

@@ -13,7 +13,7 @@ This writeup is also fully human written.
 ## initial recon -
 
 
-
+![alt](./image.png)
 
 
 So like the challenge title says, we had to assume that CET was enabled and checksec proved that. I initially thought that my cpu/kernel would enable the shadow stack on its own for cet enabled binary but it did not. We will see that later.

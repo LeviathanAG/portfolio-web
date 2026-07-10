@@ -97,7 +97,7 @@ body {
 
 /* ---- blog prose styling (markdown output) ---- */
 .prose-writeup {
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.85;
   color: var(--foreground);
 }
@@ -113,15 +113,15 @@ body {
 }
 
 .prose-writeup h1 {
-  font-size: 1.75rem;
+  font-size: 1.75em;
 }
 .prose-writeup h2 {
-  font-size: 1.4rem;
+  font-size: 1.4em;
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.4em;
 }
 .prose-writeup h3 {
-  font-size: 1.15rem;
+  font-size: 1.15em;
 }
 
 .prose-writeup h2 a,
@@ -179,7 +179,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin: 1.5em 0;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 
 .prose-writeup th,

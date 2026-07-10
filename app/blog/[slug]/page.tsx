@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getAllPosts, getPost, formatDate } from "@/lib/blog";
 import { renderMarkdownWithHeadings } from "@/lib/markdown";
 import { Badge } from "@/components/ui/badge";
+import { AuthorCard } from "@/components/author-card";
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -36,6 +37,10 @@ export default async function BlogPost({
 
   return (
     <div className="relative">
+      <aside className="fixed left-[calc(75%_+_192px)] top-32 z-30 hidden -translate-x-1/2 xl:block">
+        <AuthorCard />
+      </aside>
+
       <aside className="fixed left-6 top-32 z-30 hidden w-48 xl:block 2xl:left-10">
         <nav aria-label="Blog index" className="hud-label">
           <p className="mb-4 text-primary">INDEX</p>

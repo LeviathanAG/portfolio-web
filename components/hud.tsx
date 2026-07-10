@@ -37,22 +37,24 @@ function Clock() {
 
 export function Hud() {
   const pathname = usePathname();
-  const showClock = !pathname.startsWith("/blog");
+  const isBlog = pathname.startsWith("/blog");
 
   return (
     <>
-      {showClock && (
+      {!isBlog && (
         <div className="hud-label pointer-events-none fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 text-foreground/60 md:left-10 md:block">
           <Clock />
         </div>
       )}
-      <div className="hud-label pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 text-right text-foreground/60 md:right-10 md:block">
-        {site.hudQuote.map((line) => (
-          <span key={line} className="block">
-            {line}
-          </span>
-        ))}
-      </div>
+      {!isBlog && (
+        <div className="hud-label pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 text-right text-foreground/60 md:right-10 md:block">
+          {site.hudQuote.map((line) => (
+            <span key={line} className="block">
+              {line}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="fixed bottom-5 right-4 z-40 md:right-10">
         <SocialIcons />
       </div>

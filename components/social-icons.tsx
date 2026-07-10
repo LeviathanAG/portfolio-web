@@ -1,5 +1,5 @@
 import { Mail } from "lucide-react";
-import { site, type SocialIconName } from "@/lib/site";
+import { site, type Social, type SocialIconName } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function GithubIcon({ className }: { className?: string }) {
@@ -38,10 +38,16 @@ const icons: Record<SocialIconName, React.ComponentType<{ className?: string }>>
     mail: MailIcon,
   };
 
-export function SocialIcons({ className }: { className?: string }) {
+export function SocialIcons({
+  className,
+  socials = site.socials,
+}: {
+  className?: string;
+  socials?: readonly Social[];
+}) {
   return (
     <div className={cn("flex items-center gap-5", className)}>
-      {site.socials.map((s) => {
+      {socials.map((s) => {
         const Icon = icons[s.icon];
         return (
           <a

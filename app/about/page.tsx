@@ -16,7 +16,7 @@ export default function AboutPage() {
 
       <div className="space-y-5 leading-relaxed text-foreground/85">
         <p>
-          Hey, I&apos;m {site.name}. Im an avid CTF player and systems security enthusiast. I love to learn and share my knowledge with the community. 
+          Hey, I&apos;m {site.name}. Im an avid CTF player for Team Cryptonite and systems security addict. 
           I delve into binary and kernel exploitation during the weekends and work my normal SDE and webdev intern during the weekdays.
         </p>
         <p>

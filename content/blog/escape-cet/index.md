@@ -1,6 +1,6 @@
 ---
 title: "Escape CET"
-date: 2026-07-05
+date: 2026-07-10
 description: "Chall writeup from r3CTF 2026"
 tags: [CET, IBT, r3ctf]
 ---

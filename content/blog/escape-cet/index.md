@@ -15,11 +15,11 @@ tags: [CET, IBT, r3ctf]
 
 So like the challenge title says, we had to assume that CET was enabled and checksec proved that. I initially thought that my cpu/kernel would enable the shadow stack on its own for cet enabled binary but it did not. We will see that later.
 
-Anyways, I was trying out the chall `poly` while my junior was doing this chall but alas i could not gett past the clobbering after some top chunk shenanigans in that chall and started working on this challenge.
+Anyways, I was trying out the chall `poly` while my teammate was doing this chall but alas i could not gett past the clobbering after some top chunk shenanigans in that chall and started working on this challenge.
 
 ![alt text](image-1.png)
 
-so yea, i had some initial knowledge from my junior before i started working on the chall but ill explain from the start.
+so yea, i had some initial knowledge from my teammate before i started working on the chall but ill explain from the start.
 
 so when we run the binary we get this - 
 
@@ -1196,6 +1196,7 @@ used this to setup rsi and rax.
 
 > since randr(lm) uses lm as seed, we can use `lm = 0x234`
 
+so seed = 0x234 sets up rdx to 0x7
 
 - i had used this before so it was easy to recall.
 
@@ -1213,6 +1214,11 @@ rdx = 7
 - and if we call mprotect(lm, 0x81, 7) we can make the slab RWX and then we can write shellcode into it and call it.
 
 ![alt text](image-22.png)
+
+## Why the cet and IBT was bypassed?
+
+- All function calls start with endbr64, so IBT was trivially bypassed.
+- CET was bypassed since we only used `call arr[x]`, the return address was pushed to the shadow stack everytime and thats valid CET.
 
 
 - Then we can use the Shellcode to do basically do anything that the seccomp permits.

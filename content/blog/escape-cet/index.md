@@ -5,20 +5,20 @@ description: "Chall writeup from r3CTF 2026"
 tags: [CET, IBT, r3ctf]
 ---
 
-# Escape CET 
+# Escape CET
 
-The only challenge I solved in this CTF and it will fully human lead.
+The only challenge I solved in this CTF and it was fully human lead.
 
 This writeup is also fully human written.
-## initial recon -
+## Initial recon
 
 
-![alt](./image.png)
+![checksec output](image.png)
 
 
 So like the challenge title says, we had to assume that CET was enabled and checksec proved that. I initially thought that my cpu/kernel would enable the shadow stack on its own for cet enabled binary but it did not. We will see that later.
 
-Anyways, I was trying out the chall `poly` while my teammate was doing this chall but alas i could not gett past the clobbering after some top chunk shenanigans in that chall and started working on this challenge.
+Anyways, I was trying out the chall `poly` while my teammate was doing this chall but alas i could not get past the clobbering after some top chunk shenanigans in that chall and started working on this challenge.
 
 
 
@@ -28,20 +28,18 @@ so when we run the binary we get this -
 
 ![alt text](image-2.png)
 
-- we seemingly get two crucial pieces of info i.e : 
+we seemingly get two crucial pieces of info:
 
-i. the wandering shelf of stone spans `x` bytes.
+1. The wandering shelf of stone spans `x` bytes.
+2. The address of the stone tablet.
 
-
-ii. and the address of the stone tablet.
-
-> remmember the chall text yap, it is actually giving hints that u will understand later during reversing the chall.
+> remember the chall text yap, it is actually giving hints that u will understand later during reversing the chall.
 
 **before looking at the decomp, we should see what the leak we are getting from the binary :**
 
 ![alt text](image-3.png)
 
-- From multiple runs of the binary in gdb, i determined the leak awlays gives us the libc base addr.
+ From multiple runs of the binary in gdb, i determined the leak always gives us the libc base addr.
 
 Formula : `libc base = leak_addr + leak_size + 0x1000a000`
 
@@ -50,23 +48,23 @@ Formula : `libc base = leak_addr + leak_size + 0x1000a000`
 aight now lets get reversing to understand the chall better.
 
 
-## Reversing the bianry -
+## Reversing the binary
 
 ![alt text](image-4.png)
 
 
 this basically saves the i/o file structs in the binary and calls relevant funcs to do that.
 
-Jist of it is it snap shots the file structs and saves them so that FSOP path is completely blocked.
+Gist of it is it snap shots the file structs and saves them so that FSOP path is completely blocked.
 ![alt text](image-5.png)
 
-- this part is waht gives us the leaks. basically mmaps the slab andn stores the addr and size in globals.
+this part is what gives us the leaks. basically mmaps the slab and stores the addr and size in globals.
 
 
 > Lets now look at the options available to us in the menu.
 
 
-### Carve Ring :
+### Carve Ring
 
 
 ![alt text](image-6.png)
@@ -75,7 +73,7 @@ Jist of it is it snap shots the file structs and saves them so that FSOP path is
 This is a 4 byte write primitive. It only accepts addrs inside libc and only at offsets after `libc base + 0x208000`.
 
 
-### Write Slab :
+### Write Slab
 
 ![alt text](image-7.png)
 
@@ -84,7 +82,7 @@ The slab write is a raw write into 0xa000 bytes of the leaked slab.
 - no point in reversing this further as it is just an area were we can store stuff like fsop structs and other stuff that we will see further into the writeup.
 
 
-### Cross Bridge :
+### Cross Bridge
 
 
 
@@ -104,34 +102,36 @@ also it calls _exit() which if you know does not do the io flushing or the clean
 
 ## Exploitation
 
-- So now that we know the libc base and our primitives, what can we even do?
+So now that we know the libc base and our primitives, what can we even do?
 
-- exit handler and FSOP we cant do.
+exit handler and FSOP we cant do.
 
-- so i basically started looking at libc functions that we can call using the bridge that doesnt require register setup and also isnt protected by guard (i.e io stuff and the exit()).
+so i basically started looking at libc functions that we can call using the bridge that doesnt require register setup and also isnt protected by guard (i.e io stuff and the exit()).
 
 
-- After like 5 hours in bootlin and gdb dissassembling random fns, i found the fn `__nss_module_freeres()`.
+After like 5 hours in bootlin and gdb disassembling random fns, i found the fn `__nss_module_freeres()`.
 
 
 ## NSS
 
-- Name Service switch is the module that lets us read dns/hosts etc from smth like `/etc/nsswitch.conf`.
+Name Service switch is the module that lets us read dns/hosts etc from smth like `/etc/nsswitch.conf`.
 
 
-- Internally, glibc keeps a linked list of loaded NSS modules in a global var called `nss_module_list`.
+Internally, glibc keeps a linked list of loaded NSS modules in a global var called `nss_module_list`.
 
-src : 
+src :
 - https://man7.org/linux/man-pages/man8/nss-resolve.8.html
 
 - https://elixir.bootlin.com/glibc/glibc-2.4/source/nss/Versions
 
 
 
-- each node in the linked list is struct : 
+- each node in the linked list is a struct that i will explain below.
 
-## Source Code Exploration :
-- If you want to skip this part : GOTO `PATH AND VALIDATIONS REQUIRED` section.
+## Source code exploration
+
+
+**If you want to skip this part : GOTO `PATH AND VALIDATIONS REQUIRED` section.**
 
 ```c
 struct nss_module
@@ -162,7 +162,7 @@ src : https://elixir.bootlin.com/glibc/glibc-2.35/source/nss/nss_module.h#L61
 
 > So how does all this matter?
 
-- `__nss_module_freeres()` is a function that basically is cleanup code for the nss modules just like how io_wfile_overflow or whatever idr the exact name is in the flushing path for the io stuff etc.
+`__nss_module_freeres()` is a function that basically is cleanup code for the nss modules just like how io_wfile_overflow or whatever idr the exact name is in the flushing path for the io stuff etc.
 
 
 lets look at the source code for this function - 
@@ -189,7 +189,7 @@ __nss_module_freeres (void)
 
 Source : https://elixir.bootlin.com/glibc/glibc-2.43/source/nss/nss_module.c#L420
 
-which is rougly :
+which is roughly :
 
 ```c
 module = nss_module_list;
@@ -227,7 +227,8 @@ __libc_dlclose (void *map)
 
 ```
 src : https://elixir.bootlin.com/glibc/glibc-2.43/source/elf/dl-libc.c#L225
-- It calls dlclose with map. we control this map as it is basically `module.handle`
+
+**It calls dlclose with map. we control this map as it is basically `module.handle`**
 
 
 ### do_dlclose
@@ -293,7 +294,7 @@ _dl_close (void *_map)
 
 src : https://elixir.bootlin.com/glibc/glibc-2.43/source/elf/dl-close.c
 
-- again this calls `_dl_close_worker()` which is the actual worker for dlclose().
+**again this calls `_dl_close_worker()` which is the actual worker for dlclose().**
 
 ### _dl_close_worker()
 the source code is quite big for this : 
@@ -950,7 +951,7 @@ _dl_close_worker (struct link_map *map, bool force)
 }
 ```
 
-- this calls `_dl_catch_exception (NULL, _dl_call_fini, imap);` if validations pass.
+**this calls `_dl_catch_exception (NULL, _dl_call_fini, imap);` if validations pass.**
 
 ### _dl_call_fini()
 src : https://elixir.bootlin.com/glibc/glibc-2.43/source/elf/dl-call_fini.c
@@ -1000,15 +1001,16 @@ THEN
 
 > It calls entries backwards:
 
-- arr[4](); arr[3](); arr[2](); arr[1](); arr[0]() etc.
+``arr[4](); arr[3](); arr[2](); arr[1](); arr[0]() etc.``
 
 
-# Path and validations required 
+## Path and validations required
 
 IF you skipped the src analysis, here is the tldr of the path and its validations and also the python snippet for it.
 
 ![alt text](image-9.png)
-used ExcaliDraw [NOT AI!]
+
+*Made with Excalidraw [NOT AI!]*
 
 Our Fake module needs :
 
@@ -1017,17 +1019,17 @@ state  = 1
 handle = fake link_map
 next   = NULL
 ```
-- `dl_close` needs :
+**`dl_close` needs :**
 
-```
+```text
 l_direct_opencount = 1
 l_type = lt_loaded
 l_init_called = 1
 ```
 
-- `dl_close_worker` needs : 
+**`dl_close_worker` needs :** 
 
-```
+```text
 --map->l_direct_opencount;
 map->l_direct_opencount == 0
 map->l_type == lt_loaded
@@ -1040,14 +1042,14 @@ l_tls_dtor_count == 0
 imap->l_init_called != 0
 ```
 
-- `dl_call_fini` needs :
+**`dl_call_fini` needs :**
 
-```
+```text
 l_info[DT_FINI_ARRAY]   != NULL
 l_info[DT_FINI_ARRAYSZ] != NULL
 ```
 
-### Implementation : 
+### Implementation
 
 ```py
 def main():
@@ -1101,7 +1103,8 @@ def main():
 
 ```
 WHERE 
-```
+
+```text
 mod  = fake NSS module
 lm   = fake link_map
 dyn  = fake dynamic section
@@ -1110,7 +1113,7 @@ name = fake shared-object name
 prev = fake previous link_map 
 
 ```
-- The placement of the structures is jusst trial and error on gdb but u can be sure of the offsets,
+The placement of the structures is just `trial and error` on gdb but u can be sure of the offsets,
 
 ```py
    p.sendlineafter(b"> ", b"2")
@@ -1124,20 +1127,23 @@ prev = fake previous link_map
 
 
 ```
-> because the exploit overwrites only 4 bytes at nss_module_list + 2. If mod has low 16 bits zero, then writing the middle 4 bytes is enough to turn the NULL nss_module_list pointer into mod.
+> because the exploit overwrites only 4 bytes at nss_module_list + 2. If mod has low 16 bits zero, then writing the middle 4 bytes is enough to turn the NULL nss_module_list pointer into our mod.
 
-## Full Path on gdb upto the code execution
+## Full path on gdb up to the code execution
 
 
-- `NULL` NSS module list : 
+`NULL` NSS module list : 
 ![alt text](image-11.png)
-- After write 1 :
+
+`After list overwrite:`
+
 ![alt text](image-12.png)
 
-- Hitting NSS_Module_freeres :
+`Hitting NSS_Module_freeres :`
+
 ![alt text](image-13.png)
 
-- The Fake NSS MODULE and the link map in the slab :
+`The Fake NSS MODULE and the link map in the slab :`
 
 >STATE = 1
 
@@ -1148,13 +1154,17 @@ prev = fake previous link_map
 ![alt text](image-15.png)
 
 
-- so YEA all the fields taht we discussed are properly setup and our breakpoint at dl_call_fini should hit :
+`so YEA all the fields that we discussed are properly setup and our breakpoint at dl_call_fini should hit :`
 
 
 ![alt text](image-16.png)
+
+
 we are in the exception call, recall that `_dl_catch_exception (NULL, _dl_call_fini, imap);` is called in `_dl_close_worker()` and we are in the `_dl_call_fini()` now.
 
-- We finally hit dl_call_fini but its not a symbol.
+> We finally hit dl_call_fini but its not a symbol.
+
+
 ![alt text](image-17.png)
 
 
@@ -1169,28 +1179,34 @@ we are in the exception call, recall that `_dl_catch_exception (NULL, _dl_call_f
 so we are restricted to openat2, read, write which had worked locally using seccomp to setup Registers but that failed due to the shadow stack on the remote server.
 
 
-## Things that didnt work :
+## Things that didn't work
 
-- I tried setcontext into ORW which failed due to shadow stack and the normal stack return addr not matching.
+ I tried setcontext into ORW which failed due to shadow stack and the normal stack return addr not matching.
 
+![alt text](image-1.png)
 
-- calling arch_pctrl also return -1 in RAX on local.
+calling arch_prctl also return -1 in RAX on local.
 
-- using setcontext to jump to the shadow stack page to populate it worked locally but couldnt find the offset remotely.
+using setcontext to jump to the shadow stack page to populate it worked locally but couldnt find the offset remotely.
 
 
 ![alt text](image-18.png)
 
 
-- Anyways after getting arb function calling, a lot of things can be done to get code execution.
+Anyways after getting arb function calling, a lot of things can be done to get code execution.
+
+
+----
+
 
 ## Final Exec Path
+
  
-- what I did was used : 
+what I did was, I used `lll_lock_priv`'s register setup to setup rsi. RDI was always pointing to lm.
 
 ![alt text](image-19.png)
 
-used this to setup rsi and rdi.
+
 
 ![alt text](image-20.png)
 
@@ -1199,40 +1215,40 @@ used this to setup rsi and rdi.
 
 > since randr(lm) uses lm as seed, we can use `lm = 0x234`
 
-so seed = 0x234 sets up rdx to 0x7
+so `seed = 0x234` sets up rdx to `0x7`
 
-- i had used this before so it was easy to recall.
+i had used this before in a prev chall so it was easy to recall.
 
 ![alt text](image-21.png)
 
-- SO now we have setup 
+SO now we have setup 
 
-```
+```text
 rdi = lm
 rsi = 0x81
 rdx = 7
-
 ```
 
-- and if we call mprotect(lm, 0x81, 7) we can make the slab RWX and then we can write shellcode into it and call it.
+and if we call mprotect(lm, 0x81, 7) we can make the slab RWX and then we can write shellcode into it which we setup in slab and call it.
 
 ![alt text](image-22.png)
 
 ## Why the cet and IBT was bypassed?
 
 - All function calls start with endbr64, so IBT was trivially bypassed.
-- CET was bypassed since we only used `call arr[x]`, the return address was pushed to the shadow stack everytime and thats valid CET.
+- CET was bypassed since we only used `call arr[x]`, the return address was pushed to the shadow stack every time and thats valid CET.
 
 
 - Then we can use the Shellcode to do basically do anything that the seccomp permits.
 
 there we go, we can cat the flag :
 
-`r3ctf{cONGRatS_You-h3LP3d_crazyMAN_pasS_C3T-WIth_sh@D0W_stack_and_ibt🎉0}
-`
+
+>r3ctf{cONGRatS_You-h3LP3d_crazyMAN_pasS_C3T-WIth_sh@D0W_stack_and_ibt🎉0}
 
 
-## Final Solve Script :
+
+## Final solve script
 
 ```py
 #!/usr/bin/env python3

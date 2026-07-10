@@ -1187,7 +1187,7 @@ so we are restricted to openat2, read, write which had worked locally using secc
 
 ![alt text](image-19.png)
 
-used this to setup rsi and rax.
+used this to setup rsi and rdi.
 
 ![alt text](image-20.png)
 

@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { getAllPosts, getPost, formatDate } from "@/lib/blog";
 import { renderMarkdownWithHeadings } from "@/lib/markdown";
 import { Badge } from "@/components/ui/badge";
-import { AuthorCard } from "@/components/author-card";
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -29,6 +28,10 @@ export default async function BlogPost({
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) notFound();
+  const posts = getAllPosts();
+  const postIndex = posts.findIndex((item) => item.slug === post.slug);
+  const previousPost = posts[postIndex + 1];
+  const nextPost = posts[postIndex - 1];
 
   const { html, headings } = await renderMarkdownWithHeadings(
     post.content,
@@ -37,10 +40,6 @@ export default async function BlogPost({
 
   return (
     <div className="relative">
-      <aside className="fixed left-[calc(75%_+_192px)] top-32 z-30 hidden -translate-x-1/2 xl:block">
-        <AuthorCard />
-      </aside>
-
       <aside className="fixed left-6 top-32 z-30 hidden w-48 xl:block 2xl:left-10">
         <nav aria-label="Blog index" className="hud-label">
           <p className="mb-4 text-primary">INDEX</p>
@@ -135,6 +134,38 @@ export default async function BlogPost({
           className="prose-writeup"
           dangerouslySetInnerHTML={{ __html: html }}
         />
+
+        <nav
+          aria-label="Blog post navigation"
+          className="mt-16 grid grid-cols-2 gap-4 border-y border-border py-5"
+        >
+          {previousPost ? (
+            <Link
+              href={`/blog/${previousPost.slug}`}
+              className="group flex flex-col gap-2 transition-colors hover:text-primary"
+            >
+              <span className="hud-label text-muted-foreground">← PREVIOUS</span>
+              <span className="font-semibold group-hover:text-primary">
+                {previousPost.title}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+          {nextPost ? (
+            <Link
+              href={`/blog/${nextPost.slug}`}
+              className="group flex flex-col items-end gap-2 text-right transition-colors hover:text-primary"
+            >
+              <span className="hud-label text-muted-foreground">NEXT →</span>
+              <span className="font-semibold group-hover:text-primary">
+                {nextPost.title}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
       </article>
     </div>
   );

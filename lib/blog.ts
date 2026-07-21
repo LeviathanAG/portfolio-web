@@ -10,6 +10,7 @@ export interface PostMeta {
   date: string;
   description: string;
   tags: string[];
+  type: "writeup" | "note";
 }
 
 export interface Post extends PostMeta {
@@ -26,6 +27,7 @@ function readPost(slug: string): Post | null {
     date: data.date ? new Date(data.date).toISOString() : "",
     description: data.description ?? "",
     tags: data.tags ?? [],
+    type: data.type === "note" ? "note" : "writeup",
     content,
   };
 }

@@ -1,6 +1,6 @@
 ---
 title: "Understanding BinEX as an amateur"
-date: 2026-07-21
+date: 2025-03-11
 description: "Understanding BinEX as an amateur"
 tags: [pwn, theory, basics]
 type: note

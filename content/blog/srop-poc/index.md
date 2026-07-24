@@ -1,7 +1,7 @@
 ---
-title: "challenge 1"
+title: "POC for SROP"
 date: 2026-07-21
-description: "challenge 1"
+description: "very old writeup, excuse the mistakes"
 tags: [pwn, theory, srop, poc]
 type: note
 ---
@@ -743,4 +743,4 @@ tcp dump when we made the request to our remote :
 
 
 - pwn.college - Assembly crashcourse
-- my won v1tctf SROP writeup.
+- my own v1tctf SROP writeup.

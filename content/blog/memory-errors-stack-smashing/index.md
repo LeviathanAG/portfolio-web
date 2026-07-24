@@ -1,6 +1,6 @@
 ---
 title: "Memory erros - stack smashing - stack overflow"
-date: 2026-07-21
+date: 2024-12-29
 description: "Memory erros - stack smashing - stack overflow"
 tags: [pwn, theory, stack]
 type: note

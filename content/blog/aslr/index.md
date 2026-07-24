@@ -1,6 +1,6 @@
 ---
 title: "ASLR (address space layout randomisation) :"
-date: 2026-07-21
+date: 2025-04-11
 description: "ASLR (address space layout randomisation) :"
 tags: [pwn, theory, aslr]
 type: note

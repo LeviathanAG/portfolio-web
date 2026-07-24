@@ -1,6 +1,6 @@
 ---
 title: "Position Independent Executables"
-date: 2026-07-21
+date: 2024-12-29
 description: "Position Independent Executables"
 tags: [pwn, theory, pie]
 type: note

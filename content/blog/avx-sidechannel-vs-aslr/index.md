@@ -1,6 +1,6 @@
 ---
 title: "AVX Timing Side-Channel Attacks against Address Space Layout Randomization"
-date: 2026-07-21
+date: 2026-01-21
 description: "AVX Timing Side-Channel Attacks against Address Space Layout Randomization"
 tags: [pwn, theory, side-channel]
 type: note

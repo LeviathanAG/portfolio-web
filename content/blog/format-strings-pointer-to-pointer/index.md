@@ -1,6 +1,6 @@
 ---
 title: "FMT strings, used to overwrite places if fmt_string pwntools fails to do it."
-date: 2026-07-21
+date: 2025-07-21
 description: "FMT strings, used to overwrite places if fmt_string pwntools fails to do it."
 tags: [pwn, theory, format-strings]
 type: note

@@ -1,6 +1,6 @@
 ---
 title: "SROP (signal Return oriented programming) -"
-date: 2026-07-21
+date: 2025-12-10
 description: "SROP (signal Return oriented programming) -"
 tags: [pwn, theory, srop]
 type: note

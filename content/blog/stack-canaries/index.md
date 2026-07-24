@@ -1,6 +1,6 @@
 ---
 title: "Buffer Overflow mitigation using Stack canaries"
-date: 2026-07-21
+date: 2024-12-30
 description: "Buffer Overflow mitigation using Stack canaries"
 tags: [pwn, theory, mitigations]
 type: note

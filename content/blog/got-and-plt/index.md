@@ -1,6 +1,6 @@
 ---
 title: "GLOBAL OFFSET TABLE (GOT) & PROCEDURE LINKAGE TABLE (PLT)"
-date: 2026-07-21
+date: 2025-07-21
 description: "GLOBAL OFFSET TABLE (GOT) & PROCEDURE LINKAGE TABLE (PLT)"
 tags: [pwn, theory, linking]
 type: note

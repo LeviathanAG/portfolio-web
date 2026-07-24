@@ -1,6 +1,6 @@
 ---
 title: "ROP (return oriented programming)"
-date: 2026-07-21
+date: 2025-5-26
 description: "ROP (return oriented programming)"
 tags: [pwn, theory, rop]
 type: note

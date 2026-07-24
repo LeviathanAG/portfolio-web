@@ -1,6 +1,6 @@
 ---
 title: "basic pwntools methods that help with bin exp."
-date: 2026-07-21
+date: 2024-12-29
 description: "basic pwntools methods that help with bin exp."
 tags: [pwn, theory, pwntools]
 type: note

@@ -1,6 +1,6 @@
 ---
 title: "Debugging using gbd"
-date: 2026-07-21
+date: 2024-07-21
 description: "Debugging using gbd"
 tags: [pwn, theory, gdb]
 type: note

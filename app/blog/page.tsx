@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllPosts, formatDate } from "@/lib/blog";
+import { formatDate, getAllPosts, getTopics, hasTopic } from "@/lib/blog";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
@@ -11,34 +11,76 @@ export const metadata: Metadata = {
 export default async function BlogIndex({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; topic?: string }>;
 }) {
   const posts = getAllPosts();
-  const { type } = await searchParams;
+  const { type, topic } = await searchParams;
   const activeType = type === "writeup" || type === "note" ? type : "all";
-  const filteredPosts =
-    activeType === "all" ? posts : posts.filter((post) => post.type === activeType);
+  const topics = getTopics(posts);
+  const activeTopic = topics.find(
+    (availableTopic) => availableTopic.toLowerCase() === topic?.toLowerCase(),
+  );
+  const filteredPosts = posts.filter(
+    (post) =>
+      (activeType === "all" || post.type === activeType) &&
+      (!activeTopic || hasTopic(post, activeTopic)),
+  );
+
+  const filterHref = (nextType: string, nextTopic?: string) => {
+    const params = new URLSearchParams();
+    if (nextType !== "all") params.set("type", nextType);
+    if (nextTopic) params.set("topic", nextTopic);
+    const query = params.toString();
+    return query ? `/blog?${query}` : "/blog";
+  };
 
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 px-5 pb-32 pt-28 md:px-6 md:pt-32 xl:grid-cols-[12rem_minmax(0,1fr)] xl:gap-16">
       <aside className="xl:pt-2">
         <nav aria-label="Filter posts" className="hud-label">
           <p className="mb-4 text-primary">FILTER</p>
-          <div className="flex gap-4 xl:flex-col xl:gap-3">
-            {[
-              ["writeup", "WRITEUPS"],
-              ["note", "NOTES"],
-            ].map(([value, label]) => (
+          <div className="flex flex-wrap gap-x-4 gap-y-2 xl:flex-col xl:gap-3">
+            {["all", "writeup", "note"].map((value) => {
+              const label = value === "all" ? "ALL" : `${value.toUpperCase()}S`;
+              return (
+                <Link
+                  key={value}
+                  href={filterHref(value, activeTopic)}
+                  aria-current={activeType === value ? "page" : undefined}
+                  className={`transition-colors hover:text-primary ${
+                    activeType === value ? "text-primary" : "text-foreground/60"
+                  }`}
+                >
+                  {activeType === value ? "> " : "  "}
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+          <p className="mb-4 mt-8 text-primary">TOPIC</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 xl:flex-col xl:gap-3">
+            <Link
+              href={filterHref(activeType)}
+              aria-current={!activeTopic ? "page" : undefined}
+              className={`transition-colors hover:text-primary ${
+                !activeTopic ? "text-primary" : "text-foreground/60"
+              }`}
+            >
+              {!activeTopic ? "> " : "  "}ALL
+            </Link>
+            {topics.map((availableTopic) => (
               <Link
-                key={value}
-                href={`/blog?type=${value}`}
-                aria-current={activeType === value ? "page" : undefined}
+                key={availableTopic}
+                href={filterHref(activeType, availableTopic)}
+                aria-current={activeTopic === availableTopic ? "page" : undefined}
                 className={`transition-colors hover:text-primary ${
-                  activeType === value ? "text-primary" : "text-foreground/60"
+                  activeTopic === availableTopic
+                    ? "text-primary"
+                    : "text-foreground/60"
                 }`}
               >
-                {activeType === value ? "> " : "  "}
-                {label}
+                {activeTopic === availableTopic ? "> " : "  "}
+                {availableTopic.toUpperCase()}
               </Link>
             ))}
           </div>

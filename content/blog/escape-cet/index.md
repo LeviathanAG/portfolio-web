@@ -1,7 +1,7 @@
 ---
-title: "Escape CET"
+title: "Bypassing CET/IBT using Function Oriented Programming"
 date: 2026-07-10
-description: "Chall writeup from r3CTF 2026"
+description: "deep dive into NSS_Module_freeres"
 tags: [CET, IBT, r3ctf]
 ---
 

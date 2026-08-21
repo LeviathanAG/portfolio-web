@@ -11,6 +11,7 @@ export interface PostMeta {
   description: string;
   tags: string[];
   type: "writeup" | "note";
+  hidden: boolean;
 }
 
 export interface Post extends PostMeta {
@@ -28,23 +29,40 @@ function readPost(slug: string): Post | null {
     description: data.description ?? "",
     tags: data.tags ?? [],
     type: data.type === "note" ? "note" : "writeup",
+    hidden: data.hidden === true,
     content,
   };
 }
 
-export function getAllPosts(): Post[] {
+function postMetadata(post: Post): PostMeta {
+  return {
+    slug: post.slug,
+    title: post.title,
+    date: post.date,
+    description: post.description,
+    tags: post.tags,
+    type: post.type,
+    hidden: post.hidden,
+  };
+}
+
+export function getAllPosts(): PostMeta[] {
   if (!fs.existsSync(BLOG_DIR)) return [];
   return fs
     .readdirSync(BLOG_DIR, { withFileTypes: true })
     .filter((e) => e.isDirectory())
     .map((e) => readPost(e.name))
-    .filter((p): p is Post => p !== null && !p.slug.startsWith("_"))
+    .filter(
+      (p): p is Post =>
+        p !== null && !p.hidden && !p.slug.startsWith("_"),
+    )
+    .map(postMetadata)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 const NON_TOPIC_TAGS = new Set(["pwn", "theory"]);
 
-export function getTopics(posts: Post[]): string[] {
+export function getTopics(posts: PostMeta[]): string[] {
   return Array.from(
     new Set(
       posts.flatMap((post) =>
@@ -54,14 +72,15 @@ export function getTopics(posts: Post[]): string[] {
   ).sort((a, b) => a.localeCompare(b));
 }
 
-export function hasTopic(post: Post, topic: string): boolean {
+export function hasTopic(post: PostMeta, topic: string): boolean {
   return post.tags.some((tag) => tag.toLowerCase() === topic.toLowerCase());
 }
 
 export function getPost(slug: string): Post | null {
   // slugs come from the URL so we never let them escape the blog dir
   if (!/^[a-z0-9-]+$/i.test(slug)) return null;
-  return readPost(slug);
+  const post = readPost(slug);
+  return post?.hidden ? null : post;
 }
 
 export function formatDate(iso: string): string {

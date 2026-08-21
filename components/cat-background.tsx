@@ -92,8 +92,12 @@ export function CatBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isBlog = pathname.startsWith("/blog");
 
   useEffect(() => {
+    // Avoid a permanent full-screen WebGL render loop behind long articles.
+    if (isBlog) return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -209,7 +213,9 @@ export function CatBackground() {
       renderer.dispose();
       container.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [isBlog]);
+
+  if (isBlog) return null;
 
   return (
     <div

@@ -4,6 +4,7 @@ date: 2025-04-11
 description: "pwn clg ksec notes"
 tags: [pwn, theory, kernel]
 type: note
+hidden: true
 ---
 
 # Kernel Security Notes

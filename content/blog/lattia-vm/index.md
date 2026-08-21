@@ -4,6 +4,7 @@ date: 2026-01-08
 description: "leakcyg "
 tags: [pwn, vm]
 type: writeup
+hidden: true
 ---
 
 # Lattia VM 1
